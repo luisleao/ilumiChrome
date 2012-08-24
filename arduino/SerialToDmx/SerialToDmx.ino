@@ -17,11 +17,6 @@
 #include <DmxSimple.h>
 
 void setup() {
-  
-  DmxSimple.usePin(3);
-  DmxSimple.maxChannel(4);
-
-  
   Serial.begin(9600);
   Serial.println("SerialToDmx ready");
   Serial.println();
@@ -29,8 +24,9 @@ void setup() {
   Serial.println(" 123c : use DMX channel 123");
   Serial.println(" 45w  : set current channel to value 45");
   
-  
-  
+  DmxSimple.usePin(3);
+  //DmxSimple.maxChannel(4);
+
 }
 
 int value = 0;
@@ -47,9 +43,6 @@ void loop() {
     if (c=='c') channel = value;
     else if (c=='w') {
       DmxSimple.write(channel, value);
-      Serial.print(channel);
-      Serial.print(" ");
-      Serial.print(value);
       Serial.println();
     }
     value = 0;
