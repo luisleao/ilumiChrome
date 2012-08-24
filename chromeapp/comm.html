@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<link rel="stylesheet" media="all" href="css/main.css"></link>
+	<title>ilumiChrome</title>
+</head>
+<body>
+
+	<h1>ilumiChrome</h1>
+
+	<div class="commands">
+		<button class="refresh">refresh</button>
+		<button class="open">open</button>
+		<button class="close">close</button>
+		<div class="log"></div>
+	</div>
+
+	<div id="sample">
+	</div>
+
+	<p id="channel_data">
+		<input class="r" type="range" min="0" max="255" value="0"/><span>0</span>
+		<input class="g" type="range" min="0" max="255" value="0"/><span>0</span>
+		<input class="b" type="range" min="0" max="255" value="0"/><span>0</span>
+	</p>
+
+
+	<script src="js/serial.js"></script>
+	<script src="js/dmx.js"></script>
+
+</body>
+</html>
