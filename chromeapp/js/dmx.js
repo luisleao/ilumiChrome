@@ -9,7 +9,8 @@ var red = 0;
 var green = 0;
 var blue = 0;
 
-var bitrate = 57600;
+var bitrate = 9600; //57600;
+var modo = "arduino"; //arduino|xbee
 
 
 
@@ -63,12 +64,21 @@ var bitrate = 57600;
           case "b": blue = this.value; break;
         }
 
-        //document.querySelector("#sample").style.backgroundColor = "rgb("+red+","+green+","+blue+")";
-
         var cor = decimalToHex(red, 2) + decimalToHex(green, 2) + decimalToHex(blue, 2);
         document.querySelector("#sample").style.backgroundColor = "#" + cor;
-        console.log(cor);
-        writeSerial(cor);
+
+        var comando = "";
+        switch(this.className) {
+          case "r": comando += "2c"; break;
+          case "g": comando += "3c"; break;
+          case "b": comando += "4c"; break;
+        }
+        comando += this.value + "w\n";
+
+        switch(modo) {
+          case "arduino": writeSerial(comando); break;
+          case "xbee": writeSerial(cor); break;
+        }
     });
   };
   
@@ -119,6 +129,16 @@ var bitrate = 57600;
     logSuccess("Device found (connectionId="+cInfo.connectionId+")");
     flipState(false);
     serial_lib.startListening(onRead);
+
+    if (modo == "arduino") {
+      writeSerial("1c255w");
+      writeSerial("2c0w");
+      writeSerial("3c0w");
+      writeSerial("4c0w");
+    }
+
+
+
   };
   
   var writeSerial=function(writeString) {
