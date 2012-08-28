@@ -1,5 +1,19 @@
 
 
+/*
+//SAMPLE:
+
+dmx.openSerial("/dev/tty.usbmodem1421", 28800, function(){
+  dmx.setBrightness(255);
+  dmx.setColor(255, 0, 0);
+});
+
+dmx.closeSerial();
+
+*/
+
+
+
 
 
 //const SENSOR_REFRESH_INTERVAL=200;
@@ -43,11 +57,22 @@ var controller = (function(){
 
   var init=function() {
 
-    btnOpen.addEventListener("click", openSerial);
+
+    serial_lib.getPorts(function(ports) {
+      for (var i=0; i<ports.length; i++) {
+         if (/usb/i.test(ports[i]) && /tty/i.test(ports[i])) {
+          console.log("opening port " + ports[i]);
+          dmx.openSerial(ports[i], bitrate);
+          return;
+        }
+      }
+    });
+
+    //btnOpen.addEventListener("click", openSerial);
     btnClose.addEventListener("click", closeSerial);
     document.querySelector(".refresh").addEventListener("click", refreshPorts);
     initListeners();
-    refreshPorts();
+    //refreshPorts();
 
   };
 
@@ -99,6 +124,7 @@ var controller = (function(){
          if (/usb/i.test(items[i]) && /tty/i.test(items[i])) {
             serialPort = items[i];
             logSuccess("auto-selected "+items[i]);
+
             //connect
             dmx.openSerial(serialPort, bitrate, function(){
               flipState(true);
@@ -120,13 +146,26 @@ var controller = (function(){
   };
 
 
-  init();
+  //init();
 
 
 })();
 
 
+
+
+
+
+
+
+
+
+
 var dmx = (function() {
+
+  var close_callback = null;
+  var open_callback = null;
+  var read_callback = null;
   
   var init=function() {
     if (!serial_lib) throw "You must include serial.js before";
@@ -162,12 +201,15 @@ var dmx = (function() {
   }
 
 
+
+
+
   var openSerial=function(serialPort, bitrate, callback) {
     if (!serialPort) {
       logError("Invalid serialPort");
       return;
     }
-    if (callback) callback();
+    if (callback) open_callback = callback;
     //flipState(true);
     serial_lib.openSerial(serialPort, bitrate, onOpen);
   };
@@ -181,6 +223,8 @@ var dmx = (function() {
       writeSerial((start_channel + 0) + "c255w");
       setColor(0, 0, 0);
     }
+
+    if (open_callback) open_callback();
 
   };
   
@@ -202,11 +246,8 @@ var dmx = (function() {
     //TODO: verify serial data received
     console.log("onRead");
     console.log(readData);
-    
-    if (readData.indexOf("log:")>=0) {
-      return;
-    }
 
+    if (read_callback) read_callback(readData);
 
   }
 
@@ -217,9 +258,8 @@ var dmx = (function() {
   
   var onClose = function(result) {
     //flipState(true);
-
+    if (close_callback) close_callback();
   }
-  
   
   init();
 
@@ -228,6 +268,9 @@ var dmx = (function() {
     "setBrightness": setBrightness,
     "openSerial": openSerial,
     "closeSerial": closeSerial,
+    "onOpen": open_callback,
+    "onClose": close_callback,
+    "onRead": read_callback,
   }
 
 })();
@@ -244,4 +287,7 @@ function decimalToHex(d, padding) {
 
     return hex;
 }
+
+
+
 
