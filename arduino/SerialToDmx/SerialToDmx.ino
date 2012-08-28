@@ -17,7 +17,7 @@
 #include <DmxSimple.h>
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(28800); //9600
   Serial.println("SerialToDmx ready");
   Serial.println();
   Serial.println("Syntax:");

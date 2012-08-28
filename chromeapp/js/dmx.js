@@ -9,13 +9,14 @@ var red = 0;
 var green = 0;
 var blue = 0;
 
-var bitrate = 9600; //57600;
+var bitrate = 28800; //57600;
 var modo = "arduino"; //arduino|xbee
 
+var start_channel = 1;
 
 
-(function() {
-  
+
+var controller = (function(){
 
   console.log("DMX INICIALIZADO!");
 
@@ -39,16 +40,15 @@ var modo = "arduino"; //arduino|xbee
     logArea.innerHTML=msg+"<br/>"+logArea.innerHTML;
   };
   
-  
-  var init=function() {
 
-    if (!serial_lib) throw "You must include serial.js before";
+  var init=function() {
 
     btnOpen.addEventListener("click", openSerial);
     btnClose.addEventListener("click", closeSerial);
     document.querySelector(".refresh").addEventListener("click", refreshPorts);
     initListeners();
     refreshPorts();
+
   };
 
   var initListeners=function() {
@@ -64,23 +64,18 @@ var modo = "arduino"; //arduino|xbee
           case "b": blue = this.value; break;
         }
 
-        var cor = decimalToHex(red, 2) + decimalToHex(green, 2) + decimalToHex(blue, 2);
-        document.querySelector("#sample").style.backgroundColor = "#" + cor;
+        dmx.setColor(red, green, blue);
 
-        var comando = "";
-        switch(this.className) {
-          case "r": comando += "2c"; break;
-          case "g": comando += "3c"; break;
-          case "b": comando += "4c"; break;
-        }
-        comando += this.value + "w\n";
-
-        switch(modo) {
-          case "arduino": writeSerial(comando); break;
-          case "xbee": writeSerial(cor); break;
-        }
     });
   };
+
+
+
+  var flipState=function(deviceLocated) {
+    btnOpen.disabled=!deviceLocated;
+    btnClose.disabled=deviceLocated;
+  };
+
   
   var addEventToElements=function(eventType, selector, listener) {
     var elems=document.querySelectorAll(selector);
@@ -95,10 +90,6 @@ var modo = "arduino"; //arduino|xbee
     }
   };
 
-  var flipState=function(deviceLocated) {
-    btnOpen.disabled=!deviceLocated;
-    btnClose.disabled=deviceLocated;
-  };
   
   var refreshPorts=function() {
 
@@ -106,38 +97,90 @@ var modo = "arduino"; //arduino|xbee
       logSuccess("got "+items.length+" ports");
       for (var i=0; i<items.length; i++) {
          if (/usb/i.test(items[i]) && /tty/i.test(items[i])) {
-           serialPort = items[i];
-           logSuccess("auto-selected "+items[i]);
-           //connect
-           openSerial();
-           return;
+            serialPort = items[i];
+            logSuccess("auto-selected "+items[i]);
+            //connect
+            dmx.openSerial(serialPort, bitrate, function(){
+              flipState(true);
+            });
+            return;
          }
       }
     });
   };
+
+
+  var openSerial = function() {
+    dmx.openSerial(serialPort, bitrate);
+
+  };
+
+  var closeSerial = function() {
+    dmx.closeSerial();
+  };
+
+
+  init();
+
+
+})();
+
+
+var dmx = (function() {
   
-  var openSerial=function() {
+  var init=function() {
+    if (!serial_lib) throw "You must include serial.js before";
+  };
+
+  var getChannel = function(channel) {
+    return channel + start_channel;
+  }
+
+  var setColor = function(r, g, b) {
+        red = r;
+        green = g;
+        blue = b;
+
+        var cor = decimalToHex(red, 2) + decimalToHex(green, 2) + decimalToHex(blue, 2);
+        document.querySelector("#sample").style.backgroundColor = "#" + cor;
+
+        switch(modo) {
+          case "arduino": 
+            writeSerial(getChannel(1) + "c" + red + "w\n");
+            writeSerial(getChannel(2) + "c" + green + "w\n");
+            writeSerial(getChannel(3) + "c" + blue + "w\n");
+            break;
+
+          case "xbee": writeSerial(cor + "\n"); break;
+        }
+
+  };
+
+  var setBrightness = function(value) {
+    if (value > 255 || value < 0) value = 0;
+    writeSerial(getChannel(0) + "c" + value + "w\n");
+  }
+
+
+  var openSerial=function(serialPort, bitrate, callback) {
     if (!serialPort) {
       logError("Invalid serialPort");
       return;
     }
-    flipState(true);
+    if (callback) callback();
+    //flipState(true);
     serial_lib.openSerial(serialPort, bitrate, onOpen);
   };
   
   var onOpen=function(cInfo) {
-    logSuccess("Device found (connectionId="+cInfo.connectionId+")");
-    flipState(false);
+    console.log("Device found (connectionId="+cInfo.connectionId+")");
+    //flipState(false);
     serial_lib.startListening(onRead);
 
     if (modo == "arduino") {
-      writeSerial("1c255w");
-      writeSerial("2c0w");
-      writeSerial("3c0w");
-      writeSerial("4c0w");
+      writeSerial((start_channel + 0) + "c255w");
+      setColor(0, 0, 0);
     }
-
-
 
   };
   
@@ -160,7 +203,6 @@ var modo = "arduino"; //arduino|xbee
     console.log("onRead");
     console.log(readData);
     
-
     if (readData.indexOf("log:")>=0) {
       return;
     }
@@ -170,15 +212,24 @@ var modo = "arduino"; //arduino|xbee
 
 
   var closeSerial=function() {
-   serial_lib.closeSerial(onClose);
+    serial_lib.closeSerial(onClose);
   };
   
   var onClose = function(result) {
-   flipState(true);
+    //flipState(true);
+
   }
   
   
   init();
+
+  return {
+    "setColor": setColor,
+    "setBrightness": setBrightness,
+    "openSerial": openSerial,
+    "closeSerial": closeSerial,
+  }
+
 })();
 
 
