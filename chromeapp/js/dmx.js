@@ -3,10 +3,22 @@
 /*
 //SAMPLE:
 
-dmx.openSerial("/dev/tty.usbmodem1421", 28800, function(){
-  dmx.setBrightness(255);
-  dmx.setColor(255, 0, 0);
+serial_lib.getPorts(function(ports) {
+  for (var i=0; i<ports.length; i++) {
+     if (/usb/i.test(ports[i]) && /tty/i.test(ports[i])) {
+      var serial_port = ports[i];
+
+      dmx.openSerial(serial_port, 28800, function(){
+        dmx.setBrightness(255);
+        dmx.setColor(255, 0, 0);
+      });
+
+      return;
+    }
+  }
 });
+
+
 
 dmx.closeSerial();
 
