@@ -1,27 +1,26 @@
 
-
 /*
+
+
 //SAMPLE:
 
-serial_lib.getPorts(function(ports) {
-  for (var i=0; i<ports.length; i++) {
-     if (/usb/i.test(ports[i]) && /tty/i.test(ports[i])) {
-      var serial_port = ports[i];
+//general use
 
-      dmx.openSerial(serial_port, 28800, function(){
-        dmx.setBrightness(255);
-        dmx.setColor(255, 0, 0);
-      });
+  dmx_open();
 
-      return;
-    }
-  }
-});
+  geral.acende();
+  geral.setColor(255, 255, 0);
 
-dmx.closeSerial();
+  pulpito.acende();
+  pultipo.apaga();
+
+  dmx_close();
 
 
-dmx.setColor(dmx_map.geral, 0, 0, 255);
+//to define color to a specific controller
+
+  dmx.setColor(dmx_map.geral, 0, 0, 255);
+
 
 
 */
@@ -29,155 +28,96 @@ dmx.setColor(dmx_map.geral, 0, 0, 255);
 
 
 
-//const SENSOR_REFRESH_INTERVAL=200;
-
 var serialPort = null;
-var bitrate = 28800; //57600;
+var BITRATE = 28800; //57600;
 var modo = "arduino"; //arduino|xbee
 
-var start_channel = 1;
 
 
 
-var controller = (function(){
 
-  console.log("DMX INICIALIZADO!");
+var dmx_open = function() {
+  serial_lib.getPorts(function(ports) {
+    for (var i=0; i<ports.length; i++) {
+       if (/usb/i.test(ports[i]) && /tty/i.test(ports[i])) {
+        var serial_port = ports[i];
 
-  var btnOpen=document.querySelector(".open");
-  var btnClose=document.querySelector(".close");
-  var logArea=document.querySelector(".log");
-  
-  var serial_devices=document.querySelector(".serial_devices");
-  
-  var logObj=function(obj) {
-    console.log(obj);
-  }
-  var logSuccess=function(msg) {
-    log("<span style='color: green;'>"+msg+"</span>");
-  };
-  var logError=function(msg) {
-    log("<span style='color: red;'>"+msg+"</span>");
-  };
-  var log=function(msg) {
-    console.log(msg);
-    logArea.innerHTML=msg+"<br/>"+logArea.innerHTML;
-  };
-  
-
-  var init=function() {
-
-    serial_lib.getPorts(function(ports) {
-      for (var i=0; i<ports.length; i++) {
-         if (/usb/i.test(ports[i]) && /tty/i.test(ports[i])) {
-          console.log("opening port " + ports[i]);
-          dmx.openSerial(ports[i], bitrate);
-          return;
-        }
-      }
-    });
-
-    initListeners();
-    //refreshPorts();
-
-  };
-
-  var initListeners=function() {
-
-    console.log("init listeners");
-
-    //btnOpen.addEventListener("click", openSerial);
-    btnClose.addEventListener("click", closeSerial);
-    document.querySelector(".refresh").addEventListener("click", refreshPorts);
-
-    addEventToElements("change", "input[type='range']", function(e, c) {
-        this.nextSibling.textContent=this.value;
-
-        switch(this.className) {
-          case "r": red = this.value; break;
-          case "g": green = this.value; break;
-          case "b": blue = this.value; break;
-        }
-
-        dmx.setColor(red, green, blue);
-
-    });
-  };
-
-
-
-  var flipState=function(deviceLocated) {
-    btnOpen.disabled=!deviceLocated;
-    btnClose.disabled=deviceLocated;
-  };
-
-  
-  var addEventToElements=function(eventType, selector, listener) {
-    var elems=document.querySelectorAll(selector);
-    
-    for (var i=0; i<elems.length; i++) {
-      (function() {
-        var c=i;
-        elems[i].addEventListener(eventType, function(e) {
-          listener.apply(this, [e, c]);
+        dmx.openSerial(serial_port, BITRATE, function(){
+          console.log("openned!");
+          tudo.apaga();
         });
-      })();
-    }
-  };
 
-  
-  var refreshPorts=function() {
-
-    serial_lib.getPorts(function(items) {
-      logSuccess("got "+items.length+" ports");
-      for (var i=0; i<items.length; i++) {
-         if (/usb/i.test(items[i]) && /tty/i.test(items[i])) {
-            serialPort = items[i];
-            logSuccess("auto-selected "+items[i]);
-
-            //connect
-            dmx.openSerial(serialPort, bitrate, function(){
-              flipState(true);
-            });
-            return;
-         }
+        return;
       }
-    });
-  };
+    }
+  });
+};
 
-
-  var openSerial = function() {
-    dmx.openSerial(serialPort, bitrate);
-
-  };
-
-  var closeSerial = function() {
-    dmx.closeSerial();
-  };
-
-  //TODO: descomentar para funcionar ilumiChrome
-  //init();
-
-})();
+var dmx_close = function() {
+  dmx.closeSerial();
+};
 
 
 
 
 
-serial_lib.getPorts(function(ports) {
-  for (var i=0; i<ports.length; i++) {
-     if (/usb/i.test(ports[i]) && /tty/i.test(ports[i])) {
-      var serial_port = ports[i];
 
-      dmx.openSerial(serial_port, 28800, function(){
-        console.log("openned!");
-        dmx.setBrightness(255);
-        dmx.setColor(255, 0, 0);
-      });
+//definir iluminacao de cada mapa
 
-      return;
+
+var tudo = {
+  "acende": function() {
+    for (chave in dmx_map) {
+      dmx.setBrightnessAllChannels(dmx_map[chave], 255);
+    }
+  },
+  "apaga": function() {
+    for (chave in dmx_map) {
+      dmx.setBrightnessAllChannels(dmx_map[chave], 0);
     }
   }
-});
+}
+
+var geral = {
+
+  "setColor": function(red, green, blue) {
+    dmx.setColor(dmx_map.geral, red, green, blue);
+  },
+
+  "setBrightness": function(red, green, blue) {
+    dmx.setBrightness(dmx_map.geral.dimmer);
+  },
+
+  "apaga": function() {
+    dmx.setBrightness(dmx_map.geral.dimmer, 0);
+  },
+
+  "acende": function() {
+    dmx.setBrightness(dmx_map.geral.dimmer, 255);
+  }
+
+}
+
+var pulpito = {
+  "acende": function() { dmx.setBrightnessAllChannels(dmx_map.pulpito, 255); },
+  "apaga": function() { dmx.setBrightnessAllChannels(dmx_map.pulpito, 0); }
+}
+
+var galera = {
+  "acende": function() { dmx.setBrightnessAllChannels(dmx_map.mini_brut, 255); },
+  "apaga": function() { dmx.setBrightnessAllChannels(dmx_map.mini_brut, 0); }
+}
+
+var pernas = {
+  "acende": function() { dmx.setBrightnessAllChannels(dmx_map.pernas, 255); },
+  "apaga": function() { dmx.setBrightnessAllChannels(dmx_map.pernas, 0); }
+}
+
+var logo = {
+  "acende": function() { dmx.setBrightnessAllChannels(dmx_map.logo, 255); },
+  "apaga": function() { dmx.setBrightnessAllChannels(dmx_map.logo, 0); }
+}
+
 
 
 
@@ -189,17 +129,17 @@ serial_lib.getPorts(function(ports) {
 */
 
 var dmx_map = {
-  /*
+  
   "teste": {
-    "dimmer": 1,
-    "red": 2,
-    "green": 3,
-    "blue": 4
+    "dimmer": 127,
+    "red": 128,
+    "green": 129,
+    "blue": 130
   },
-  */
+  
 
   "geral": {
-    "dimmer": 131,
+    "dimmer": 127, //131, //TODO: mudar para 131 em producao
     "red": 128,
     "green": 129,
     "blue": 130
@@ -213,7 +153,7 @@ var dmx_map = {
   },
 
 
-
+/*
   "bateria_6_frente" : { // mais geral, na frente do pulpito
     "canal_1": 15,
     "canal_2": 17,
@@ -240,6 +180,26 @@ var dmx_map = {
     "canal_3": 46,
     "canal_4": 13,
     "canal_5": 1
+  },
+*/
+
+  "baterias" : { 
+    "canal_1": 15,
+    "canal_2": 17,
+    "canal_3": 19,
+    "canal_4": 10,
+    "canal_5": 11,
+    "canal_6": 16,
+    "canal_7": 18,
+    "canal_8": 41,
+    "canal_9": 42,
+    "canal_10": 44,
+    "canal_11": 47,
+    "canal_12": 26,
+    "canal_13": 45,
+    "canal_14": 46,
+    "canal_15": 13,
+    "canal_16": 1
   },
 
   "mini_brut": {
@@ -282,18 +242,6 @@ var dmx = (function() {
 
 
 
-  var setColorGeral = function(red, green, blue) {
-
-    if (red > 255 || red < 0) red = 0;
-    if (green > 255 || green < 0) green = 0;
-    if (blue > 255 || blue < 0) blue = 0;
-
-    var default_key = keys(dmx_map)[0];
-    writeSerial(dmx_map[default_key].red + "c" + red + "w\n");
-    writeSerial(dmx_map[default_key].green + "c" + green + "w\n");
-    writeSerial(dmx_map[default_key].blue + "c" + blue + "w\n");
-
-  };
 
   var setColor = function(controller, red, green, blue) {
 
@@ -307,12 +255,6 @@ var dmx = (function() {
 
   };
 
-  var setBrightnessGeral = function(value) {
-    if (value > 255 || value < 0) value = 0;
-
-    var default_key = keys(dmx_map)[0];
-    writeSerial(dmx_map[default_key].dimmer + "c" + value + "w\n");
-  }
 
   var setBrightness = function(controller_port, value) {
     if (value > 255 || value < 0) value = 0;
@@ -333,40 +275,6 @@ var dmx = (function() {
 
 
 
-  /*
-
-  var getChannel = function(channel) {
-    return channel + start_channel;
-  }
-
-
-  var setColor = function(r, g, b) {
-        red = r;
-        green = g;
-        blue = b;
-
-        var cor = decimalToHex(red, 2) + decimalToHex(green, 2) + decimalToHex(blue, 2);
-        document.querySelector("#sample").style.backgroundColor = "#" + cor;
-
-        switch(modo) {
-          case "arduino": 
-            writeSerial(getChannel(1) + "c" + red + "w\n");
-            writeSerial(getChannel(2) + "c" + green + "w\n");
-            writeSerial(getChannel(3) + "c" + blue + "w\n");
-            break;
-
-          case "xbee": writeSerial(cor + "\n"); break;
-        }
-
-  };
-  */
-
-
-
-
-
-
-
   var openSerial=function(serialPort, bitrate, callback) {
     if (!serialPort) {
       logError("Invalid serialPort");
@@ -379,19 +287,14 @@ var dmx = (function() {
   
   var onOpen=function(cInfo) {
     console.log("Device found (connectionId="+cInfo.connectionId+")");
-    //flipState(false);
     serial_lib.startListening(onRead);
-
-    if (modo == "arduino") {
-      writeSerial((start_channel + 0) + "c255w");
-      setColor(0, 0, 0);
-    }
-
     if (open_callback) open_callback();
 
   };
   
   var writeSerial=function(writeString) {
+    console.log(writeString);
+
     if (!serial_lib.isConnected()) {
       return;
     }
@@ -434,11 +337,9 @@ var dmx = (function() {
     "onRead": read_callback,
 
     "setColor": setColor,
-    "setColorGeral": setColorGeral,
     "setDimmer": setDimmer,
     "setBrightness": setBrightness,
-    "setBrightnessGeral": setBrightnessGeral,
-    "setBrightnessAllChannels": setBrightnessAllChannels
+    "setBrightnessAllChannels": setBrightnessAllChannels,
 
   }
 
