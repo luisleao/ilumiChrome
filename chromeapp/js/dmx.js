@@ -18,12 +18,13 @@ serial_lib.getPorts(function(ports) {
   }
 });
 
-
-
 dmx.closeSerial();
 
-*/
 
+dmx.setColor(dmx_map.geral, 0, 0, 255);
+
+
+*/
 
 
 
@@ -31,10 +32,6 @@ dmx.closeSerial();
 //const SENSOR_REFRESH_INTERVAL=200;
 
 var serialPort = null;
-var red = 0;
-var green = 0;
-var blue = 0;
-
 var bitrate = 28800; //57600;
 var modo = "arduino"; //arduino|xbee
 
@@ -69,7 +66,6 @@ var controller = (function(){
 
   var init=function() {
 
-
     serial_lib.getPorts(function(ports) {
       for (var i=0; i<ports.length; i++) {
          if (/usb/i.test(ports[i]) && /tty/i.test(ports[i])) {
@@ -80,9 +76,6 @@ var controller = (function(){
       }
     });
 
-    //btnOpen.addEventListener("click", openSerial);
-    btnClose.addEventListener("click", closeSerial);
-    document.querySelector(".refresh").addEventListener("click", refreshPorts);
     initListeners();
     //refreshPorts();
 
@@ -91,6 +84,10 @@ var controller = (function(){
   var initListeners=function() {
 
     console.log("init listeners");
+
+    //btnOpen.addEventListener("click", openSerial);
+    btnClose.addEventListener("click", closeSerial);
+    document.querySelector(".refresh").addEventListener("click", refreshPorts);
 
     addEventToElements("change", "input[type='range']", function(e, c) {
         this.nextSibling.textContent=this.value;
@@ -157,15 +154,115 @@ var controller = (function(){
     dmx.closeSerial();
   };
 
-
+  //TODO: descomentar para funcionar ilumiChrome
   //init();
-
 
 })();
 
 
 
 
+
+serial_lib.getPorts(function(ports) {
+  for (var i=0; i<ports.length; i++) {
+     if (/usb/i.test(ports[i]) && /tty/i.test(ports[i])) {
+      var serial_port = ports[i];
+
+      dmx.openSerial(serial_port, 28800, function(){
+        console.log("openned!");
+        dmx.setBrightness(255);
+        dmx.setColor(255, 0, 0);
+      });
+
+      return;
+    }
+  }
+});
+
+
+
+
+
+
+/*
+  mapa da rede DMX
+*/
+
+var dmx_map = {
+  /*
+  "teste": {
+    "dimmer": 1,
+    "red": 2,
+    "green": 3,
+    "blue": 4
+  },
+  */
+
+  "geral": {
+    "dimmer": 131,
+    "red": 128,
+    "green": 129,
+    "blue": 130
+  },
+
+
+  "pulpito" : { // na frente, centralizado no pulpito
+    "canal_1": 28,
+    "canal_2": 33,
+    "canal_3": 39
+  },
+
+
+
+  "bateria_6_frente" : { // mais geral, na frente do pulpito
+    "canal_1": 15,
+    "canal_2": 17,
+    "canal_3": 19
+  },
+
+  "bateria_8_lateral" : { // mais geral, na frente do pulpito
+    "canal_1": 10,
+    "canal_2": 11,
+    "canal_3": 16,
+    "canal_4": 18
+  },
+
+  "bateria_frente_centro": {
+    "canal_1": 41,
+    "canal_2": 42,
+    "canal_3": 44,
+    "canal_4": 47
+  },
+
+  "bateria_traseira_lateral": {
+    "canal_1": 26,
+    "canal_2": 45,
+    "canal_3": 46,
+    "canal_4": 13,
+    "canal_5": 1
+  },
+
+  "mini_brut": {
+    "canal_1": 3, 
+    "canal_2": 4,
+    "canal_3": 8,
+    "canal_4": 7
+  },
+
+  "pernas": {
+    "canal_1": 14,
+    "canal_2": 21,
+    "canal_3": 23,
+    "canal_4": 37,
+    "canal_5": 38,
+    "canal_6": 43
+  },
+
+  "logo": {
+    "dimmer": 48
+  }
+
+}
 
 
 
@@ -183,9 +280,65 @@ var dmx = (function() {
     if (!serial_lib) throw "You must include serial.js before";
   };
 
+
+
+  var setColorGeral = function(red, green, blue) {
+
+    if (red > 255 || red < 0) red = 0;
+    if (green > 255 || green < 0) green = 0;
+    if (blue > 255 || blue < 0) blue = 0;
+
+    var default_key = keys(dmx_map)[0];
+    writeSerial(dmx_map[default_key].red + "c" + red + "w\n");
+    writeSerial(dmx_map[default_key].green + "c" + green + "w\n");
+    writeSerial(dmx_map[default_key].blue + "c" + blue + "w\n");
+
+  };
+
+  var setColor = function(controller, red, green, blue) {
+
+    if (red > 255 || red < 0) red = 0;
+    if (green > 255 || green < 0) green = 0;
+    if (blue > 255 || blue < 0) blue = 0;
+
+    writeSerial(controller.red + "c" + red + "w\n");
+    writeSerial(controller.green + "c" + green + "w\n");
+    writeSerial(controller.blue + "c" + blue + "w\n");
+
+  };
+
+  var setBrightnessGeral = function(value) {
+    if (value > 255 || value < 0) value = 0;
+
+    var default_key = keys(dmx_map)[0];
+    writeSerial(dmx_map[default_key].dimmer + "c" + value + "w\n");
+  }
+
+  var setBrightness = function(controller_port, value) {
+    if (value > 255 || value < 0) value = 0;
+    writeSerial(controller_port + "c" + value + "w\n");
+  }
+
+  var setDimmer = function(controller, value) {
+    if (value > 255 || value < 0) value = 0;
+    writeSerial(controller.dimmer + "c" + value + "w\n");
+  }
+
+  var setBrightnessAllChannels = function(controller, value) {
+    for (chave in controller) {
+      writeSerial(controller[chave] + "c" + value + "w\n");
+    }
+
+  };
+
+
+
+  /*
+
   var getChannel = function(channel) {
     return channel + start_channel;
   }
+
 
   var setColor = function(r, g, b) {
         red = r;
@@ -206,11 +359,9 @@ var dmx = (function() {
         }
 
   };
+  */
 
-  var setBrightness = function(value) {
-    if (value > 255 || value < 0) value = 0;
-    writeSerial(getChannel(0) + "c" + value + "w\n");
-  }
+
 
 
 
@@ -276,13 +427,19 @@ var dmx = (function() {
   init();
 
   return {
-    "setColor": setColor,
-    "setBrightness": setBrightness,
     "openSerial": openSerial,
     "closeSerial": closeSerial,
     "onOpen": open_callback,
     "onClose": close_callback,
     "onRead": read_callback,
+
+    "setColor": setColor,
+    "setColorGeral": setColorGeral,
+    "setDimmer": setDimmer,
+    "setBrightness": setBrightness,
+    "setBrightnessGeral": setBrightnessGeral,
+    "setBrightnessAllChannels": setBrightnessAllChannels
+
   }
 
 })();
