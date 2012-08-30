@@ -1,3 +1,23 @@
+/*
+Copyright 2012 Luis Fernando de Oliveira Leao.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Author: Luis Leao (luisleao@gmail.com)
+*/
+
+
+
 
 /*
 
@@ -7,7 +27,6 @@
 //general use
 
   dmx_open();
-
   geral.acende();
   geral.setColor(255, 255, 0);
 
@@ -16,24 +35,12 @@
 
   dmx_close();
 
-
 //to define color to a specific controller
-
   dmx.setColor(dmx_map.geral, 0, 0, 255);
-
-
 
 */
 
-
-
-
-var serialPort = null;
 var BITRATE = 28800; //57600;
-var modo = "arduino"; //arduino|xbee
-
-
-
 
 
 var dmx_open = function() {
@@ -60,10 +67,7 @@ var dmx_close = function() {
 
 
 
-
-
 //definir iluminacao de cada mapa
-
 
 var tudo = {
   "acende": function() {
@@ -121,9 +125,6 @@ var logo = {
 
 
 
-
-
-
 /*
   mapa da rede DMX
 */
@@ -151,37 +152,6 @@ var dmx_map = {
     "canal_2": 33,
     "canal_3": 39
   },
-
-
-/*
-  "bateria_6_frente" : { // mais geral, na frente do pulpito
-    "canal_1": 15,
-    "canal_2": 17,
-    "canal_3": 19
-  },
-
-  "bateria_8_lateral" : { // mais geral, na frente do pulpito
-    "canal_1": 10,
-    "canal_2": 11,
-    "canal_3": 16,
-    "canal_4": 18
-  },
-
-  "bateria_frente_centro": {
-    "canal_1": 41,
-    "canal_2": 42,
-    "canal_3": 44,
-    "canal_4": 47
-  },
-
-  "bateria_traseira_lateral": {
-    "canal_1": 26,
-    "canal_2": 45,
-    "canal_3": 46,
-    "canal_4": 13,
-    "canal_5": 1
-  },
-*/
 
   "baterias" : { 
     "canal_1": 15,
@@ -221,6 +191,36 @@ var dmx_map = {
   "logo": {
     "dimmer": 48
   }
+
+/*
+  "bateria_6_frente" : { // mais geral, na frente do pulpito
+    "canal_1": 15,
+    "canal_2": 17,
+    "canal_3": 19
+  },
+
+  "bateria_8_lateral" : { // mais geral, na frente do pulpito
+    "canal_1": 10,
+    "canal_2": 11,
+    "canal_3": 16,
+    "canal_4": 18
+  },
+
+  "bateria_frente_centro": {
+    "canal_1": 41,
+    "canal_2": 42,
+    "canal_3": 44,
+    "canal_4": 47
+  },
+
+  "bateria_traseira_lateral": {
+    "canal_1": 26,
+    "canal_2": 45,
+    "canal_3": 46,
+    "canal_4": 13,
+    "canal_5": 1
+  },
+*/
 
 }
 
@@ -352,7 +352,6 @@ function decimalToHex(d, padding) {
     while (hex.length < padding) {
         hex = "0" + hex;
     }
-
     return hex;
 }
 
