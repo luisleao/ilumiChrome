@@ -65,13 +65,13 @@ var controller = (function(){
 
   var init=function() {
 
+    if (!serial_lib.isConnected())
+      dmx_open(function(){
+        console.log("openned!");
+        tudo.apaga();
+        geral.acende();
 
-    dmx_open(function(){
-      console.log("openned!");
-      tudo.apaga();
-      geral.acende();
-      
-    });
+      });
 
     initListeners();
 
