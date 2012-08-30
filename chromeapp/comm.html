@@ -14,20 +14,37 @@
 		<button class="refresh" style="display: none;">refresh</button>
 		<button class="open" style="display: none;">open</button>
 		<button class="close" style="display: none;">close</button>
-		<button class="acende">acende</button>
-		<button class="apaga">apaga</button>
-
+		<br clear="all" />
 		<div class="log" style="display: none;"></div>
+
 	</div>
 
-	<div id="sample">
+
+	<div class="dimmers">
+		<h2>Dimmers</h2>
+
+		<b>Geral</b><input id="geral" class="gray" type="range" min="0" max="255" value="0"/><span>0</span><br clear="all"/>
+		<b>Logo</b><input id="logo" class="gray" type="range" min="0" max="255" value="0"/><span>0</span><br clear="all"/>
+		<b>Púlpito</b><input id="pulpito" class="gray" type="range" min="0" max="255" value="0"/><span>0</span><br clear="all"/>
+		<b>Lateral</b><input id="lateral" class="gray" type="range" min="0" max="255" value="0"/><span>0</span><br clear="all"/>
+		<b>BRUT</b><input id="brut" class="gray" type="range" min="0" max="255" value="0"/><span>0</span><br clear="all"/>
+
 	</div>
 
-	<p id="channel_data">
-		<input class="r" type="range" min="0" max="255" value="0"/><span>0</span>
-		<input class="g" type="range" min="0" max="255" value="0"/><span>0</span>
-		<input class="b" type="range" min="0" max="255" value="0"/><span>0</span>
-	</p>
+
+	<div id="channel_data">
+		<h2>RGB</h2>
+		<button class="rgb_liga">Ligar</button>
+		<br clear="all" />
+		<div class="channel_values">
+			<input class="r" type="range" min="0" max="255" value="0"/><span>0</span>
+			<input class="g" type="range" min="0" max="255" value="0"/><span>0</span>
+			<input class="b" type="range" min="0" max="255" value="0"/><span>0</span>
+		</div>
+		<div id="sample">
+		</div>
+
+	</div>
 
 
 	<script src="js/serial.js"></script>

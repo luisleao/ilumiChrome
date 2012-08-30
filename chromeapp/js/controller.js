@@ -5,6 +5,8 @@ var controller = (function(){
   console.log("DMX INICIALIZADO!");
 
 
+  //var current_dimmer = null;
+
   var red = 0;
   var green = 0;
   var blue = 0;
@@ -13,8 +15,18 @@ var controller = (function(){
   var btnClose=document.querySelector(".close");
   var logArea=document.querySelector(".log");
 
-  var btnAcende=document.querySelector(".acende");
-  var btnApaga=document.querySelector(".apaga");
+
+
+  var btnRgbStatus=document.querySelector(".rgb_liga");
+
+
+
+  //var btnApaga=document.querySelector(".apaga");
+
+
+
+
+
 
   
   var serial_devices=document.querySelector(".serial_devices");
@@ -48,27 +60,76 @@ var controller = (function(){
 
     console.log("init listeners");
 
+
+    var btns = document.querySelectorAll(".dimmers button");
+
+    // define actions for dimmers
+    for (var indice=0; indice<btns.length; indice++) {
+      btns[indice].addEventListener("click", function(e){
+        e.preventDefault();
+
+        var current_dimmer = this.className.replace("active", "").trim();
+        this.className = current_dimmer + " active";
+        console.log(current_dimmer);
+
+        var active_btns = document.querySelectorAll(".dimmers button.active");
+
+        for (var idx2=0; idx2<active_btns.length; idx2++) {
+          if (active_btns[idx2].className.replace("active", "").trim() != current_dimmer) {
+            active_btns[idx2].className = active_btns[idx2].className.replace("active", "").trim();
+          }
+        }
+
+      });
+    }
+
+
+    //define actions for serial buttons
     btnOpen.addEventListener("click", dmx_open);
     btnClose.addEventListener("click", dmx_close);
 
-    btnAcende.addEventListener("click", geral.acende);
-    btnApaga.addEventListener("click", geral.apaga);
 
-    //document.querySelector(".refresh").addEventListener("click", refreshPorts);
+    //rgb status button
+    btnRgbStatus.addEventListener("click", function(e){
+      e.preventDefault();
+
+      var status = this.className.replace("active", "").trim();
+
+      if (/active/i.test(this.className)) {
+        this.className = status;
+        geral.apaga();
+      } else {
+        this.className = status + " active";
+        geral.acende();
+      }
+
+
+
+    });
+    
 
     addEventToElements("change", "input[type='range']", function(e, c) {
         this.nextSibling.textContent=this.value;
 
-        switch(this.className) {
-          case "r": red = this.value; break;
-          case "g": green = this.value; break;
-          case "b": blue = this.value; break;
+        if (this.className == "gray") {
+          dmx.setBrightnessAllChannels(dmx_map[this.id], this.value);
+
+
+        } else {
+
+          switch(this.className) {
+            case "r": red = this.value; break;
+            case "g": green = this.value; break;
+            case "b": blue = this.value; break;
+          }
+
+          geral.setColor(red, green, blue);
+
+          var cor = decimalToHex(red, 2) + decimalToHex(green, 2) + decimalToHex(blue, 2);
+          document.querySelector("#sample").style.backgroundColor = "#" + cor;
+
         }
 
-        geral.setColor(red, green, blue);
-
-        var cor = decimalToHex(red, 2) + decimalToHex(green, 2) + decimalToHex(blue, 2);
-        document.querySelector("#sample").style.backgroundColor = "#" + cor;
 
     });
   };
