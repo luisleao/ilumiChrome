@@ -4,9 +4,18 @@ var controller = (function(){
 
   console.log("DMX INICIALIZADO!");
 
+
+  var red = 0;
+  var green = 0;
+  var blue = 0;
+
   var btnOpen=document.querySelector(".open");
   var btnClose=document.querySelector(".close");
   var logArea=document.querySelector(".log");
+
+  var btnAcende=document.querySelector(".acende");
+  var btnApaga=document.querySelector(".apaga");
+
   
   var serial_devices=document.querySelector(".serial_devices");
   
@@ -27,18 +36,11 @@ var controller = (function(){
 
   var init=function() {
 
-    serial_lib.getPorts(function(ports) {
-      for (var i=0; i<ports.length; i++) {
-         if (/usb/i.test(ports[i]) && /tty/i.test(ports[i])) {
-          console.log("opening port " + ports[i]);
-          dmx.openSerial(ports[i], bitrate);
-          return;
-        }
-      }
-    });
+
+    dmx_open();
+    geral.acende();
 
     initListeners();
-    //refreshPorts();
 
   };
 
@@ -46,9 +48,13 @@ var controller = (function(){
 
     console.log("init listeners");
 
-    //btnOpen.addEventListener("click", openSerial);
-    btnClose.addEventListener("click", closeSerial);
-    document.querySelector(".refresh").addEventListener("click", refreshPorts);
+    btnOpen.addEventListener("click", dmx_open);
+    btnClose.addEventListener("click", dmx_close);
+
+    btnAcende.addEventListener("click", geral.acende);
+    btnApaga.addEventListener("click", geral.apaga);
+
+    //document.querySelector(".refresh").addEventListener("click", refreshPorts);
 
     addEventToElements("change", "input[type='range']", function(e, c) {
         this.nextSibling.textContent=this.value;
@@ -59,7 +65,10 @@ var controller = (function(){
           case "b": blue = this.value; break;
         }
 
-        dmx.setColor(red, green, blue);
+        geral.setColor(red, green, blue);
+
+        var cor = decimalToHex(red, 2) + decimalToHex(green, 2) + decimalToHex(blue, 2);
+        document.querySelector("#sample").style.backgroundColor = "#" + cor;
 
     });
   };
@@ -86,37 +95,9 @@ var controller = (function(){
   };
 
   
-  var refreshPorts=function() {
-
-    serial_lib.getPorts(function(items) {
-      logSuccess("got "+items.length+" ports");
-      for (var i=0; i<items.length; i++) {
-         if (/usb/i.test(items[i]) && /tty/i.test(items[i])) {
-            serialPort = items[i];
-            logSuccess("auto-selected "+items[i]);
-
-            //connect
-            dmx.openSerial(serialPort, bitrate, function(){
-              flipState(true);
-            });
-            return;
-         }
-      }
-    });
-  };
-
-
-  var openSerial = function() {
-    dmx.openSerial(serialPort, bitrate);
-
-  };
-
-  var closeSerial = function() {
-    dmx.closeSerial();
-  };
 
   //TODO: descomentar para funcionar ilumiChrome
-  //init();
+  init();
 
 })();
 

@@ -293,8 +293,6 @@ var dmx = (function() {
   };
   
   var writeSerial=function(writeString) {
-    console.log(writeString);
-
     if (!serial_lib.isConnected()) {
       return;
     }

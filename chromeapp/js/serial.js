@@ -85,6 +85,7 @@ var serial_lib=(function() {
   };
   
   var writeSerial=function(str) {
+    //console.log(str);
     chrome.serial.write(connectionInfo.connectionId, str2ab(str), onWrite); 
   }
   
