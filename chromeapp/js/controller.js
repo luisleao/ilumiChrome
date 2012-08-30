@@ -66,8 +66,12 @@ var controller = (function(){
   var init=function() {
 
 
-    dmx_open();
-    geral.acende();
+    dmx_open(function(){
+      console.log("openned!");
+      tudo.apaga();
+      geral.acende();
+      
+    });
 
     initListeners();
 

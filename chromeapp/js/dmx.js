@@ -26,7 +26,10 @@ Author: Luis Leao (luisleao@gmail.com)
 
 //general use
 
-  dmx_open();
+  dmx_open(function(){
+          console.log("openned!");
+          tudo.apaga();
+  });
   geral.acende();
   geral.setColor(255, 255, 0);
 
@@ -43,16 +46,13 @@ Author: Luis Leao (luisleao@gmail.com)
 var BITRATE = 28800; //57600;
 
 
-var dmx_open = function() {
+var dmx_open = function(callback) {
   serial_lib.getPorts(function(ports) {
     for (var i=0; i<ports.length; i++) {
        if (/usb/i.test(ports[i]) && /tty/i.test(ports[i])) {
         var serial_port = ports[i];
 
-        dmx.openSerial(serial_port, BITRATE, function(){
-          console.log("openned!");
-          tudo.apaga();
-        });
+        dmx.openSerial(serial_port, BITRATE, callback);
 
         return;
       }
