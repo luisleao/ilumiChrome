@@ -25,7 +25,9 @@ void setup() {
   Serial.println(" 45w  : set current channel to value 45");
   
   DmxSimple.usePin(3);
-  //DmxSimple.maxChannel(4);
+  DmxSimple.maxChannel(150);
+  
+  
 
 }
 
