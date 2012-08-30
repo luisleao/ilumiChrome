@@ -62,10 +62,9 @@ var controller = (function(){
     logArea.innerHTML=msg+"<br/>"+logArea.innerHTML;
   };
   
-
   var init=function() {
 
-    if (!serial_lib.isConnected())
+    if ((typeof(dmx_controller_skip_init)=='undefined' || dmx_controller_skip_init==false) && !serial_lib.isConnected())
       dmx_open(function(){
         console.log("openned!");
         tudo.apaga();
@@ -106,8 +105,8 @@ var controller = (function(){
 
 
     //define actions for serial buttons
-    btnOpen.addEventListener("click", dmx_open);
-    btnClose.addEventListener("click", dmx_close);
+    btnOpen && btnOpen.addEventListener("click", dmx_open);
+    btnClose && btnClose.addEventListener("click", dmx_close);
 
 
     //rgb status button
@@ -158,8 +157,8 @@ var controller = (function(){
 
 
   var flipState=function(deviceLocated) {
-    btnOpen.disabled=!deviceLocated;
-    btnClose.disabled=deviceLocated;
+    btnOpen && btnOpen.disabled=!deviceLocated;
+    btnClose && btnClose.disabled=deviceLocated;
   };
 
   
